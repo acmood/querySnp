@@ -12,20 +12,82 @@
 #include "mredis.hpp"
 #include <string>
 
-#define PVV std::pair<std::vector<int>, std::vector< std::vector<Bitarray > > >
+#define M 46
+std::vector<int> seeds{0,1,2,3,4,5,6};
+#define SIZE1 47925291
+#define SIZE2 47925291
+#define KERM_CNT 120
+#define HASH_CNT 10
 
 std::vector< std::vector<char*> > parserFileData(char *fileData){
     std::vector< std::vector<char*> > ret;
     return ret;
 }
 
-PVV checkRead(std::vector<char*> dataLine){
-    std::vector<int> ansIdx;
-    std::vector<std::vector<Bitarray> > readBit;
-    return make_pair(ansIdx, readBit);
+
+Bitarray get_kmer_bitarray_col(uint64_t col, std::vector<Bitarray> kmerHash){
+    /* """得到BF的一列""" */
+    std::vector<int> lst;
+    for (auto kmer : kmerHash){
+        lst.push_back(kmer.get(col));
+    }
+    Bitarray ret = Bitarray(kmerHash.size());
+    for (int i = 0; i < kmerHash.size(); i ++)
+        ret.set(i, lst[i]);
+    return ret;
 }
 
-void checkSnp(std::vector<PVV> &first_bf_ans){
+void checkRead(std::vector<char*> &dataLine, std::vector<int> &ansIdx, std::vector<Bitarray> readBit){
+    uint32_t *count = new uint32_t[M];
+    memset(count, 0, sizeof(int)*M);
+    std::vector<Bitarray> kmerHash;
+    int kmerId = 0;
+    std::vector<uint8_t*> getBytes;
+    for(auto kmer:dataLine){
+        auto kid = getModOfHash(kmer, seeds, SIZE1);
+        bool flag = false;
+        int colCnt = 0;
+        for (auto col:kid){
+            char *pref=NULL;
+            strcat2(&pref, 'bacteria', '_I', int2str(col), '_',  int2str(k1), 'kmer', NULL);
+            if(kmerId == KERM_CNT-1 and colCnt == HASH_CNT-1){
+                flag = true;
+            }
+            colCnt += 1;
+            auto byte = RedisMgr().get(pref);
+            getBytes.push_back(byte);
+        }
+        kmerId += 1;
+    }
+    std::vector<Bitarray> bitarrayList;
+    for(auto x:getBytes)
+        bitarrayList.push_back(Bitarray(x, sizeof(x)));
+    int st = 0;
+    for(int i = 0; i < dataLine.size(); i ++){
+        int ed = (i+1) * HASH_CNT;
+    //         与运算确定kmer在哪些bf中存在
+        Bitarray k_bit = getAnd(bitarrayList, st, ed);
+        kmerHash.push_back(k_bit);
+    //         bf_id：kmer存在的bf id
+        auto bf_id = k_bit.search();
+    //     count:存储每个bf中检索到的kmer个数
+        for (auto idd:bf_id)
+            count[idd] += 1;
+        st += HASH_CNT;
+    //         后续需要修改为top k
+    }
+
+    int mx = maxInList(count, M);
+    for (int i =0; i < M; i ++)
+        if(count[i] == mx)
+            ansIdx.push_back(i);
+    //     read_bit：返回第一层bf的检索结果
+    for (auto col:ansIdx)
+        readBit.push_back(get_kmer_bitarray_col(col,kmerHash));
+    //         ans:存在率最高的bf id, read_bit：由第一层bf检测后的01序列
+}
+
+void checkSnp(std::vector<std::vector<int> > &first_bf_ansIdx, std::vector<std::vector<Bitarray> >first_bf_ans_readBit){
     
 }
 
@@ -33,19 +95,22 @@ void doCheck(char *filepath){
     char* fileData = readData(filepath);
     // fileData -> ListData
     auto dataList = parserFileData(fileData);
-    std::vector<PVV> first_bf_ans;
+    std::vector<std::vector<int> > first_bf_ansIdx;
+    std::vector<std::vector<Bitarray> > first_bf_readBit;
     // ListData -> PairData
     for(auto &dataLine: dataList){
-        auto tmp = checkRead(dataLine);
-        first_bf_ans.push_back(tmp);
+        std::vector<int> t_ans;
+        std::vector<Bitarray> t_readBit;
+        checkRead(dataLine, t_ans, t_readBit);
+        first_bf_ansIdx.push_back(t_ans);
+        first_bf_readBit.push_back(t_readBit);
     }
     //
-    checkSnp(first_bf_ans);
+    checkSnp(first_bf_ansIdx, first_bf_readBit);
 }
 
 void testMurmurHash3(){
     char x[33] = "GTCCACGAAGTTTGAGTGCTACATCTGAGGA";
-    std::vector<int> seeds{0,1,2,3,4,5,6};
     const uint64_t mod = 47925291;
     auto ret = getModOfHash(x, seeds, mod);
     for(uint64_t v:ret)printf("%d-", v);
@@ -108,6 +173,9 @@ int main(int argc, char** argv){
     testBitArray1();
     testBitArray2();
     testRedis();
-    doCheck("");
+    //char *k=NULL;
+    //strcat2(&k, int2str(1223), int2str(3421), NULL);
+    //printf("%s", k);
+    //doCheck("");
     return 0;
 }

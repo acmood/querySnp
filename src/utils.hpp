@@ -17,4 +17,9 @@
 char* readData(const char* filepath);
 mmh3 getModOfHash(const char* s, const std::vector<int> &seed, const uint64_t mod);
 
+char* int2str(int x);
+size_t strcat2(char **dst_out, ...);
+uint32_t maxInList(uint32_t *count, int len);
+char* get_read_string(char *file_name);
+
 #endif /* utils_hpp */

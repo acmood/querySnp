@@ -25,6 +25,22 @@ Bitarray getAnd(std::vector<Bitarray>& bitarrays){
     }
 }
 
+Bitarray getAnd(std::vector<Bitarray>& bitarrays, int start, int end){
+    
+    if (bitarrays.size() == 0){
+        Bitarray ret = Bitarray();
+        return ret;
+    }else{
+        int len = bitarrays[0].len;
+        Bitarray ret = Bitarray(len);
+        ret.full(1);
+        for(int i = start; i < end; i ++){
+            ret &= bitarrays[i];
+        }
+        return ret;
+    }
+}
+
 void Bitarray::full(int value){
     uint8_t v = value ? 0xff : 0x00;
     memset(arr, v, sizeof(uint8_t)*arr_len);
