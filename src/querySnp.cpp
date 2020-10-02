@@ -104,7 +104,7 @@ Bitarray* getBitarrayByColume(uint64_t col){
     redis::RedisMgr* r = redis::instance("127.0.0.1", 6379);
     char *key;
     strcat2(&key, 'bacteria', '_', int2str(col), '_', int2str(k2), 'kmer');
-    
+
     auto res = r->get(key);
     int len = sizeof(res);
     return new Bitarray(res, len);
@@ -169,7 +169,7 @@ void doCheck(char *filepath){
     std::vector<std::vector<char*> > dataList;
     std::vector<char*> lineList;
     parserFileData(fileData, lineList, dataList);
-    
+
     std::vector<std::vector<int> > first_bf_ansIdx;
     std::vector<std::vector<Bitarray*> > first_bf_readBit;
     // ListData -> PairData
@@ -222,7 +222,7 @@ void testBitArray2(){
     }
     Bitarray* x = new Bitarray(xx, 12);
     auto x_search = x->search();
-    
+
     for(uint64_t idx:x_search){
         printf("%llu-", idx);
     }
@@ -253,15 +253,15 @@ void testReadFile(){
 }
 
 int main(int argc, char** argv){
-    //testMurmurHash3();
-    //testBitArray1();
-    //testBitArray2();
-    //testRedis();
-    //testReadFile();
+    testMurmurHash3();
+    testBitArray1();
+    testBitArray2();
+    testRedis();
+    testReadFile();
     
-    //char *k=nullptr;
-    //strcat2(&k, int2str(1223), int2str(3421), nullptr);
-    //printf("%s", k);
+    char *k=nullptr;
+    strcat2(&k, int2str(1223), int2str(3421), nullptr);
+    printf("%s", k);
     //doCheck("");
     return 0;
 }

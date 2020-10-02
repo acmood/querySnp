@@ -27,8 +27,8 @@ private:
 
     
 };
-RedisMgr *redisMgr=nullptr;
 RedisMgr* instance(const char* host=nullptr, int port=6379);
+
 
 }
 #endif /* mredis_hpp */

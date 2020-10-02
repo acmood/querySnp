@@ -10,9 +10,7 @@
 #include <string>
 
 namespace redis{
-RedisMgr::RedisMgr(){
-    
-}
+RedisMgr::RedisMgr(){}
 
 
 uint8_t* RedisMgr::get(const char *key)
@@ -60,6 +58,7 @@ bool RedisMgr::connect(const char* host, int port)
 }
 
 
+RedisMgr *redisMgr;
 RedisMgr* instance(const char* ip, int port){
     if(redisMgr == nullptr){
         redisMgr = new RedisMgr();
