@@ -10,32 +10,32 @@
 
 
 
-Bitarray getAnd(std::vector<Bitarray>& bitarrays){
+Bitarray* getAnd(std::vector<Bitarray*>& bitarrays){
     if (bitarrays.size() == 0){
-        Bitarray ret = Bitarray();
+        Bitarray* ret = new Bitarray();
         return ret;
     }else{
-        int len = bitarrays[0].len;
-        Bitarray ret = Bitarray(len);
-        ret.full(1);
+        int len = bitarrays[0]->len;
+        Bitarray* ret = new Bitarray(len);
+        ret->full(1);
         for(auto bitarray:bitarrays){
-            ret &= bitarray;
+            *ret &= *bitarray;
         }
         return ret;
     }
 }
 
-Bitarray getAnd(std::vector<Bitarray>& bitarrays, int start, int end){
+Bitarray* getAnd(std::vector<Bitarray*>& bitarrays, int start, int end){
     
     if (bitarrays.size() == 0){
-        Bitarray ret = Bitarray();
+        Bitarray* ret = new Bitarray();
         return ret;
     }else{
-        int len = bitarrays[0].len;
-        Bitarray ret = Bitarray(len);
-        ret.full(1);
+        int len = bitarrays[0]->len;
+        Bitarray* ret = new Bitarray(len);
+        ret->full(1);
         for(int i = start; i < end; i ++){
-            ret &= bitarrays[i];
+            *ret &= *bitarrays[i];
         }
         return ret;
     }
@@ -75,9 +75,7 @@ Bitarray::Bitarray(uint64_t len){
 }
 
 Bitarray::Bitarray(uint8_t *_arr, uint64_t len){
-    if (!arr){
-        arr = new uint8_t[len];
-    }
+    arr = new uint8_t[len];
     memcpy(arr, _arr, len*sizeof(uint8_t));
     arr_len = len;
     len = arr_len << 3;
@@ -86,8 +84,8 @@ Bitarray::Bitarray(uint8_t *_arr, uint64_t len){
 
 Bitarray::~Bitarray(){
     if (arr) {
-        //delete []this->arr;  // todo 这里析构报错
-        arr = NULL;
+        delete []this->arr;  // todo 这里析构报错
+        arr = nullptr;
     }
     len = 0;
     arr_len = 0;

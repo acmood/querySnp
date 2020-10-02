@@ -61,29 +61,43 @@ uint32_t maxInList(uint32_t *count, int len){
     return mx;
 }
 
+void split(const char * str, const char c, std::vector<char*> &out){
+    int start = 0;
+    for(int i = 0; str[i]; i ++){
+        if(str[i] == c){
+            int64_t len = i-start+1;
+            char *tmp = new char[len];
+            memcpy(tmp, str+start, sizeof(char)*(len-1));
+            tmp[len-1] = '\0';
+            out.push_back(tmp);
+            start = i+1;
+        }
+    }
+}
+
 ////多字符串连接函数
 size_t strcat2(char **dst_out, ...)
 {
     size_t len = 0, len_sub;
     va_list argp;
     char *src;
-    char *dst = NULL, *dst_p;
-    *dst_out = NULL;
+    char *dst = nullptr, *dst_p;
+    *dst_out = nullptr;
     va_start(argp, dst_out);
     for (;;)
     {
-        if ((src = va_arg(argp, char *)) == NULL) break;
+        if ((src = va_arg(argp, char *)) == nullptr) break;
         len += strlen(src);
     }
     va_end(argp);
     if (len == 0) return 0;
     dst = (char *)malloc(sizeof(char) * (len + 1));
-    if (dst == NULL) return -1;
+    if (dst == nullptr) return -1;
     dst_p = dst;
     va_start(argp, dst_out);
     for (;;)
     {
-        if ((src = va_arg(argp, char *)) == NULL) break;
+        if ((src = va_arg(argp, char *)) == nullptr) break;
         len_sub = strlen(src);
         memcpy(dst_p, src, len_sub);
         dst_p += len_sub;
@@ -106,4 +120,21 @@ char* get_read_string(char *file_name)
     rewind(fp);
     length = fread(buffer,sizeof(char),length,fp);
     return buffer;
+}
+
+void subStr(char* ret, const char * src, int l, int r){
+    ret = new char[r-l+1];
+    memcpy(ret, src+l, sizeof(char)*(r-l));
+    ret[r-l] = '\0';
+}
+
+
+void print(const char *s){
+    printf("%s\n", s);
+}
+void print(std::vector<uint64_t> s){
+    printf("print uint64_t line: \n");
+    for(uint64_t i = 0; i < s.size(); i ++){
+        printf("%llu%c", s[i], "-\n"[i!=s.size()-1]);
+    }
 }

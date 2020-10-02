@@ -9,6 +9,7 @@
 #include "hiredis.h"
 #include <string>
 
+namespace redis{
 RedisMgr::RedisMgr(){
     
 }
@@ -35,19 +36,39 @@ void RedisMgr::set(const char *key, const uint8_t* value)
 RedisMgr::~RedisMgr()
 {
     redisFree(this->_connect);
-    this->_connect = NULL;
-    this->_reply = NULL;
+    this->_connect = nullptr;
+    this->_reply = nullptr;
 }
 
+
+bool RedisMgr::disconnect(){
+    redisFree(this->_connect);
+    this->_connect = nullptr;
+    this->_reply = nullptr;
+}
 
 
 bool RedisMgr::connect(const char* host, int port)
 {
     this->_connect = redisConnect(host, port);
-    if(this->_connect != NULL && this->_connect->err)
+    if(this->_connect != nullptr && this->_connect->err)
     {
         printf("connect error: %s\n", this->_connect->errstr);
         return 0;
     }
     return 1;
+}
+
+
+RedisMgr* instance(const char* ip, int port){
+    if(redisMgr == nullptr){
+        redisMgr = new RedisMgr();
+        if(!redisMgr->connect(ip, port))
+        {
+            printf("connect error!\n");
+            return 0;
+        }
+    }
+    return redisMgr;
+}
 }

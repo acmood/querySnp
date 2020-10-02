@@ -32,7 +32,7 @@ struct Bitarray{
 };
 
 
-Bitarray getAnd(std::vector<Bitarray>& bitarrays);
-Bitarray getAnd(std::vector<Bitarray>& bitarrays, int start, int end);
+Bitarray* getAnd(std::vector<Bitarray*>& bitarrays);
+Bitarray* getAnd(std::vector<Bitarray*>& bitarrays, int start, int end);
 
 #endif /* bitarray_hpp */
