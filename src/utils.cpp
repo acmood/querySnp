@@ -7,6 +7,7 @@
 
 #include "utils.hpp"
 #include <string.h>
+#include <stdarg.h>
 
 char* readData(const char* filepath){
     char* data;
