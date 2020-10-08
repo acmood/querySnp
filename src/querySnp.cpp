@@ -12,9 +12,10 @@
 #include "mredis.hpp"
 #include <string>
 #include <algorithm>
+#include <time.h>
 
 #define M 46
-std::vector<int> seeds{0,1,2,3,4,5,6};
+std::vector<int> seeds{0,1,2,3,4,5,6,7,8,9};
 #define SIZE1 47925291
 #define SIZE2 47925291
 #define KERM_CNT 120
@@ -46,7 +47,7 @@ Bitarray* get_kmer_bitarray_col(uint64_t col, std::vector<Bitarray*> kmerHash){
         ret->set(i, lst[i]);
     return ret;
 }
-
+int totalError  = 0;
 void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std::vector<Bitarray*> &readBit){
     uint32_t *count = new uint32_t[M];
     memset(count, 0, sizeof(int)*M);
@@ -59,19 +60,24 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
         bool flag = false;
         int colCnt = 0;
         for (auto col:kid){
+		if (totalError>100) return;
             char *pref=nullptr;
-            strcat2(&pref, "bacteria", "_", int2str(col), "_",  int2str(k1), "kmer", nullptr);
+            //strcat2(&pref, "bacteria", "_", int2str(col), "_",  int2str(k1), "kmer", nullptr);
+            strcat2(&pref, "Ref_Genome_Rev_Bf", int2str(col), nullptr);
             if(kmerId == KERM_CNT-1 and colCnt == HASH_CNT-1){
                 flag = true;
             }
             colCnt += 1;
             uint8_t *byte;
             uint64_t t = redis::instance()->get(pref, byte);
-            colCnt = std::max(t, lenCol);
-            if (t > 0)
+            lenCol = std::max(t, lenCol);
+            if (t > 0){
                 getBytes.push_back(byte);
-            else
-                printf("[ERROR] get col str is None");
+	    }
+            else{
+                printf("[ERROR] get col str is None, %s\n", pref);
+		totalError += 1;
+	    }
         }
         kmerId += 1;
     }
@@ -86,6 +92,7 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
         kmerHash.push_back(k_bit);
     //         bf_id：kmer存在的bf id
         auto bf_id = k_bit->search();
+        free(k_bit);
     //     count:存储每个bf中检索到的kmer个数
         for (auto idd:bf_id)
             count[idd] += 1;
@@ -94,9 +101,12 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
     }
 
     int mx = maxInList(count, M);
-    for (int i =0; i < M; i ++)
+    for (int i =0; i < M; i ++){
+    	//printf("count %d %d", i, count[i]);
         if(count[i] == mx)
             ansIdx.push_back(i);
+    }
+    //printf("mx equal %d\n", mx);
     //     read_bit：返回第一层bf的检索结果
     for (auto col:ansIdx)
         readBit.push_back(get_kmer_bitarray_col(col,kmerHash));
@@ -110,10 +120,10 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
 Bitarray* getBitarrayByColume(uint64_t col){
     redis::RedisMgr* r = redis::instance("127.0.0.1", 6379, 3);
     char *key;
-    strcat2(&key, "bacteria", "_", int2str(col), "_", int2str(k2), "kmer");
+//    strcat2(&key, "bacteria", "_", int2str(col), "_", int2str(k2), "kmer");
+    strcat2(&key, "Ref_Genome_Rev_Bf", int2str(col), nullptr);
     uint8_t *res;
-    r->get(key, res);
-    int len = sizeof(res);
+    int len = r->get(key, res);
     return new Bitarray(res, len);
 }
 
@@ -128,10 +138,12 @@ uint8_t check_hash_bf2(mmh3 hash_value, Bitarray* bit_arr){
 }
 
 int checkSnp(const std::vector<int> &first_bf_ansIdx, const std::vector<Bitarray*> &first_bf_ans_readBit, std::vector<char*> lineList, int idx){
+    printf("size of first bf ansIdx, %d %d\n", first_bf_ansIdx.size(), first_bf_ans_readBit.size());
     int fir_bf_id = first_bf_ansIdx[0];
     char* temp = lineList[idx];
     Bitarray* fir_bf_arr = first_bf_ans_readBit[0];
     Bitarray* sec_bf_arr = getBitarrayByColume(fir_bf_id);
+    printf("first array second arr %d %d\n", fir_bf_arr->len, sec_bf_arr->len);
     uint64_t i = 0;
     uint64_t ret = 0;
     uint64_t end_pos = 0;
@@ -157,6 +169,7 @@ int checkSnp(const std::vector<int> &first_bf_ansIdx, const std::vector<Bitarray
         }
         i += 1;
     }
+    printf("end_pos lentemp %d %d", end_pos, lentemp);
     while(end_pos < lentemp){
         if(end_pos+k2 > lentemp) break;
         char *t1;
@@ -180,7 +193,15 @@ void doCheck(const char *filepath){
     std::vector<std::vector<int> > first_bf_ansIdx;
     std::vector<std::vector<Bitarray*> > first_bf_readBit;
     // ListData -> PairData
+    int DataListSize = dataList.size();
+    int i = 0;
+    
+    clock_t startTime,endTime;
+    startTime = clock();//计时开始
+    printf("start checkRead\n");
     for(auto &dataLine: dataList){
+	    if (i%1000 == 0) { printf("%d - time is %.4f\n", i, (clock()-startTime)/CLOCKS_PER_SEC);}
+i ++; 
         std::vector<int> t_ans;
         std::vector<Bitarray*> t_readBit;
         checkRead(dataLine, t_ans, t_readBit);
@@ -189,7 +210,10 @@ void doCheck(const char *filepath){
     }
     //
     std::vector<uint64_t> reads_snp;
+    startTime = clock();
+    printf("start checkSnp\n");
     for(int i = 0; i < first_bf_readBit.size(); i ++){
+	if (i%1000 == 0) { printf("%d - time is %.4f\n", i, (clock()-startTime)/CLOCKS_PER_SEC);}
         reads_snp.push_back(checkSnp(first_bf_ansIdx[i], first_bf_readBit[i], lineList, i));
     }
     print(reads_snp);
@@ -220,6 +244,7 @@ void testBitArray1(){
     for(uint64_t idx:ret_search){
         printf("%llu-", idx);
     }
+    free(result_and);
     printf("\n");
 }
 void testBitArray2(){
@@ -237,7 +262,7 @@ void testBitArray2(){
 }
 
 void testRedis(){
-    redis::RedisMgr* r = redis::instance("127.0.0.1", 6379, 0);
+    redis::RedisMgr* r = redis::instance("127.0.0.1", 6379, 3);
     char name[5] = "name";
     char andy[15] = "hello,Andy";
     uint8_t *andy8 = new uint8_t[sizeof(andy)];
@@ -262,18 +287,32 @@ void testReadFile(){
     }
 }
 
-
+void init_redis(){
+    redis::RedisMgr* r = redis::instance("127.0.0.1", 6379, 3);
+}
 
 int main(int argc, char** argv){
+	init_redis();
+	
 //    testMurmurHash3();
 //    testBitArray1();
 //    testBitArray2();
-    testRedis();
+//    testRedis();
 //    testReadFile();
 //
 //    char *k=nullptr;
 //    strcat2(&k, int2str(1223), int2str(3421), nullptr);
 //    printf("%s", k);
+    doCheck("/lab-pool/Jupyter_Workspace/ly/Data/Two_BloomFilter/Range_T_reads_kmers/reads40_45");
+
+/*
+	uint8_t *ret;
+	int t = redis::instance()->get("Ref_Genome_Rev_Bf25223329", ret);
+	printf ("size of t = %d\n", t);
+	for (int i = 0; i < t; i ++){
+		printf("%d, %d\n", i, int(ret[i]));
+	}
+	*/
 //    doCheck("../data/reads40_45");
 //    doCheck("/Users/acmood/Documents/querySnp/data/reads40_45");
     return 0;

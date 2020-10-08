@@ -19,12 +19,14 @@ uint64_t RedisMgr::get(const char *key, uint8_t* &ret)
     
     if (NULL == this->_reply->str)
     {
+	printf("Redis key not find %s\n", key);
         freeReplyObject(this->_reply);
         return 0;
     }
     std::string str = this->_reply->str;
     freeReplyObject(this->_reply);
-    uint64_t lenstr = str.size();
+    //uint64_t lenstr = str.size();
+    uint64_t lenstr = this->_reply->len;
     char *cstr = new char[lenstr+1];
     strcpy(cstr, str.c_str());
     cstr[lenstr] = '\0';
@@ -76,6 +78,7 @@ bool RedisMgr::connect(const char* host, int port)
 RedisMgr *redisMgr;
 RedisMgr* instance(const char* ip, int port, int dbIndex){
     if(redisMgr == nullptr){
+	    printf("ip, port, db %s, %d, %d", ip, port, dbIndex);
         redisMgr = new RedisMgr();
         if(!redisMgr->connect(ip, port))
         {
@@ -84,6 +87,7 @@ RedisMgr* instance(const char* ip, int port, int dbIndex){
         }
         if (dbIndex != -1){
             redisMgr->select(dbIndex);
+	    printf("db is %d", dbIndex);
         }
     }
     return redisMgr;

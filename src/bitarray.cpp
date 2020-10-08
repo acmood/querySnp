@@ -78,7 +78,7 @@ Bitarray::Bitarray(uint8_t *_arr, uint64_t len){
     arr = new uint8_t[len];
     memcpy(arr, _arr, len*sizeof(uint8_t));
     arr_len = len;
-    len = arr_len << 3;
+    this->len = arr_len << 3;
 }
 
 
