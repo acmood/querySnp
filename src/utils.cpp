@@ -143,7 +143,7 @@ void print(std::vector<uint64_t> s){
     }
 }
 
-void string2uint8(const std::string str, uint32_t lenstr, uint8_t* out){
+void string2uint8(const std::string str, uint32_t lenstr, uint8_t* &out){
     char *cstr = new char[lenstr+1];
     strcpy(cstr, str.c_str());
     cstr[lenstr] = '\0';
