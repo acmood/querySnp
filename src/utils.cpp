@@ -13,7 +13,6 @@
 
 mmh3 getModOfHash(const char* s, const std::vector<int> &seeds, const uint64_t mod){
     int len = strlen(s);
-    printf("len = %d\n", len);
     mmh3 ret;
     uint8_t *out = new uint8_t[16];
     for (int seed : seeds){
