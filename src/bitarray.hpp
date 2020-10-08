@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <vector>
 #include <string.h>
+#include <stdint.h>
 //todo
 struct Bitarray{
     std::vector<uint64_t> search();

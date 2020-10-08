@@ -58,7 +58,7 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
         int colCnt = 0;
         for (auto col:kid){
             char *pref=nullptr;
-            strcat2(&pref, 'bacteria', '_I', int2str(col), '_',  int2str(k1), 'kmer', nullptr);
+            strcat2(&pref, "bacteria", "_I", int2str(col), "_",  int2str(k1), "kmer", nullptr);
             if(kmerId == KERM_CNT-1 and colCnt == HASH_CNT-1){
                 flag = true;
             }
@@ -104,7 +104,7 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
 Bitarray* getBitarrayByColume(uint64_t col){
     redis::RedisMgr* r = redis::instance("127.0.0.1", 6379);
     char *key;
-    strcat2(&key, 'bacteria', '_', int2str(col), '_', int2str(k2), 'kmer');
+    strcat2(&key, "bacteria", "_", int2str(col), "_", int2str(k2), "kmer");
     uint8_t *res;
     r->get(key, res);
     int len = sizeof(res);
