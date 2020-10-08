@@ -19,6 +19,7 @@ char* readData(const char* filepath);
 mmh3 getModOfHash(const char* s, const std::vector<int> &seed, const uint64_t mod);
 
 char* int2str(int x);
+void string2uint8(std::string str, uint32_t lenstr, uint8_t* out);
 size_t strcat2(char **dst_out, ...);
 uint32_t maxInList(uint32_t *count, int len);
 void split(const char * str, const char c, std::vector<char*> &out);

@@ -8,6 +8,7 @@
 #include "utils.hpp"
 #include <string.h>
 #include <stdarg.h>
+#include <string>
 //#include <malloc.h>
 
 
@@ -23,7 +24,10 @@ mmh3 getModOfHash(const char* s, const std::vector<int> &seeds, const uint64_t m
         }
         ret.push_back(res);
     }
-    delete [] out;
+    if (out){
+        delete [] out;
+        out = nullptr;
+    }
     return ret;
 }
 
@@ -137,4 +141,12 @@ void print(std::vector<uint64_t> s){
     for(uint64_t i = 0; i < s.size(); i ++){
         printf("%llu%c", s[i], "-\n"[i!=s.size()-1]);
     }
+}
+
+void string2uint8(const std::string str, uint32_t lenstr, uint8_t* out){
+    char *cstr = new char[lenstr+1];
+    strcpy(cstr, str.c_str());
+    cstr[lenstr] = '\0';
+    out = new uint8_t[lenstr];
+    memcpy(out, cstr, lenstr);
 }

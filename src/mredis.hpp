@@ -9,6 +9,7 @@
 #define mredis_hpp
 
 #include <stdio.h>
+#include <vector>
 #include "hiredis.h"
 
 namespace redis{
@@ -19,7 +20,7 @@ struct RedisMgr{
     bool disconnect();
     void set(const char *key, const uint8_t* value);
     bool select(int index);
-    
+    uint32_t getPipeLineWithPrefAndCols(const char* pref, const std::vector<uint64_t> &cols, std::vector<uint8_t*> &out);
     uint64_t get (const char *key, uint8_t* &ret);
 
 private:

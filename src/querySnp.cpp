@@ -49,46 +49,35 @@ Bitarray* get_kmer_bitarray_col(uint64_t col, std::vector<Bitarray*> kmerHash){
 }
 int totalError  = 0;
 void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std::vector<Bitarray*> &readBit){
+    //time O(68*500)
     uint32_t *count = new uint32_t[M];
     memset(count, 0, sizeof(int)*M);
     std::vector<Bitarray*> kmerHash;
     int kmerId = 0;
     std::vector<uint8_t*> getBytes;
     uint64_t lenCol = 0;
-    for(auto kmer:dataLine){
-        auto kid = getModOfHash(kmer, seeds, SIZE1);
+    std::vector<uint64_t> cols;
+    for(auto kmer:dataLine){//68
+        auto kid = getModOfHash(kmer, seeds, SIZE1);//10*16
         bool flag = false;
         int colCnt = 0;
-        for (auto col:kid){
-		if (totalError>100) return;
+        for (auto col:kid){//10*20
+            if (totalError>100) return;
             char *pref=nullptr;
-            //strcat2(&pref, "bacteria", "_", int2str(col), "_",  int2str(k1), "kmer", nullptr);
-            strcat2(&pref, "Ref_Genome_Rev_Bf", int2str(col), nullptr);
-            if(kmerId == KERM_CNT-1 and colCnt == HASH_CNT-1){
-                flag = true;
-            }
-            colCnt += 1;
-            uint8_t *byte;
-            uint64_t t = redis::instance()->get(pref, byte);
-            lenCol = std::max(t, lenCol);
-            if (t > 0){
-                getBytes.push_back(byte);
-	    }
-            else{
-                printf("[ERROR] get col str is None, %s\n", pref);
-		totalError += 1;
-	    }
+            cols.push_back(col);
         }
-        kmerId += 1;
     }
+            //strcat2(&pref, "bacteria", "_", int2str(col), "_",  int2str(k1), "kmer", nullptr);
+    std::sort(cols.begin(), cols.end());
+    uint64_t t = redis::instance()->getPipeLineWithPrefAndCols("Ref_Genome_Rev_Bf", cols, getBytes);
     std::vector<Bitarray*> bitarrayList;
     for(auto x:getBytes)
         bitarrayList.push_back(new Bitarray(x, lenCol));
     int st = 0;
-    for(int i = 0; i < dataLine.size(); i ++){
+    for(int i = 0; i < dataLine.size(); i ++){//68
         int ed = (i+1) * HASH_CNT;
     //         与运算确定kmer在哪些bf中存在
-        Bitarray *k_bit = getAnd(bitarrayList, st, ed);
+        Bitarray *k_bit = getAnd(bitarrayList, st, ed);//10*6
         kmerHash.push_back(k_bit);
     //         bf_id：kmer存在的bf id
         auto bf_id = k_bit->search();
@@ -101,7 +90,7 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
     }
 
     int mx = maxInList(count, M);
-    for (int i =0; i < M; i ++){
+    for (int i =0; i < M; i ++){//46
     	//printf("count %d %d", i, count[i]);
         if(count[i] == mx)
             ansIdx.push_back(i);
@@ -110,7 +99,10 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
     //     read_bit：返回第一层bf的检索结果
     for (auto col:ansIdx)
         readBit.push_back(get_kmer_bitarray_col(col,kmerHash));
-    delete [] count;
+    if (count){
+        delete [] count;
+        count = nullptr;
+    }
     kmerHash.clear();
     getBytes.clear();
     //         ans:存在率最高的bf id, read_bit：由第一层bf检测后的01序列
