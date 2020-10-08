@@ -8,12 +8,8 @@
 #include "utils.hpp"
 #include <string.h>
 #include <stdarg.h>
-#include <malloc.h>
+//#include <malloc.h>
 
-char* readData(const char* filepath){
-    char* data;
-    return data;
-}
 
 mmh3 getModOfHash(const char* s, const std::vector<int> &seeds, const uint64_t mod){
     int len = strlen(s);
@@ -46,11 +42,6 @@ char* int2str(int x){
     return ret;
 }
 
-template <typename T>
-T max(T a, T b){
-    return a>b?a:b;
-}
-
 uint32_t maxInList(uint32_t *count, int len){
     if (!count){
         return 0;
@@ -58,14 +49,15 @@ uint32_t maxInList(uint32_t *count, int len){
     }
     uint32_t mx = count[0];
     for(int i = 0; i < len; i ++){
-        mx = max(mx, count[i]);
+        mx = std::max(mx, count[i]);
     }
     return mx;
 }
 
 void split(const char * str, const char c, std::vector<char*> &out){
     int start = 0;
-    for(int i = 0; str[i]; i ++){
+    uint64_t i = 0;
+    for(i = 0; str[i]; i ++){
         if(str[i] == c){
             int64_t len = i-start+1;
             char *tmp = new char[len];
@@ -74,6 +66,13 @@ void split(const char * str, const char c, std::vector<char*> &out){
             out.push_back(tmp);
             start = i+1;
         }
+    }
+    if (start+1 < i){
+        int64_t len = i-start+1;
+        char *tmp = new char[len];
+        memcpy(tmp, str+start, sizeof(char)*(len-1));
+        tmp[len-1] = '\0';
+        out.push_back(tmp);
     }
 }
 
@@ -111,7 +110,7 @@ size_t strcat2(char **dst_out, ...)
 }
 
 ////读取基因序列
-char* get_read_string(char *file_name)
+char* readData(const char *file_name)
 {
     FILE *fp;
     char *buffer;

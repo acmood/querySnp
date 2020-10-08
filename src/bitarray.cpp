@@ -100,7 +100,7 @@ void Bitarray::set(uint64_t pos, int value){
 }
 
 uint8_t Bitarray::get(uint64_t pos){
-    if (pos > len) return 0;
+    if (pos >= len) return 0;
     uint64_t idx = pos/8;
     return (arr[idx]>> (pos-idx*8)) & 1;
 }

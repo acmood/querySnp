@@ -11,6 +11,7 @@
 #include "bitarray.hpp"
 #include "mredis.hpp"
 #include <string>
+#include <algorithm>
 
 #define M 46
 std::vector<int> seeds{0,1,2,3,4,5,6};
@@ -52,6 +53,7 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
     std::vector<Bitarray*> kmerHash;
     int kmerId = 0;
     std::vector<uint8_t*> getBytes;
+    uint64_t lenCol = 0;
     for(auto kmer:dataLine){
         auto kid = getModOfHash(kmer, seeds, SIZE1);
         bool flag = false;
@@ -64,14 +66,18 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
             }
             colCnt += 1;
             uint8_t *byte;
-            redis::instance()->get(pref, byte);
-            getBytes.push_back(byte);
+            uint64_t t = redis::instance()->get(pref, byte);
+            colCnt = std::max(t, lenCol);
+            if (t > 0)
+                getBytes.push_back(byte);
+            else
+                printf("[ERROR] get col str is None");
         }
         kmerId += 1;
     }
     std::vector<Bitarray*> bitarrayList;
     for(auto x:getBytes)
-        bitarrayList.push_back(new Bitarray(x, sizeof(x)));
+        bitarrayList.push_back(new Bitarray(x, lenCol));
     int st = 0;
     for(int i = 0; i < dataLine.size(); i ++){
         int ed = (i+1) * HASH_CNT;
@@ -164,7 +170,7 @@ int checkSnp(const std::vector<int> &first_bf_ansIdx, const std::vector<Bitarray
     return ret;
 }
 
-void doCheck(char *filepath){
+void doCheck(const char *filepath){
     char* fileData = readData(filepath);
     // fileData -> ListData
     std::vector<std::vector<char*> > dataList;
@@ -259,15 +265,16 @@ void testReadFile(){
 
 
 int main(int argc, char** argv){
-    testMurmurHash3();
-    testBitArray1();
-    testBitArray2();
-    testRedis();
-    testReadFile();
-    
-    char *k=nullptr;
-    strcat2(&k, int2str(1223), int2str(3421), nullptr);
-    printf("%s", k);
-    //doCheck("");
+//    testMurmurHash3();
+//    testBitArray1();
+//    testBitArray2();
+//    testRedis();
+//    testReadFile();
+//
+//    char *k=nullptr;
+//    strcat2(&k, int2str(1223), int2str(3421), nullptr);
+//    printf("%s", k);
+    doCheck("../data/reads40_45");
+//    doCheck("/Users/acmood/Documents/querySnp/data/reads40_45");
     return 0;
 }

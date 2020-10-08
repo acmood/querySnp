@@ -16,6 +16,12 @@ RedisMgr::RedisMgr(){}
 uint64_t RedisMgr::get(const char *key, uint8_t* &ret)
 {
     this->_reply = (redisReply*)redisCommand(this->_connect, "GET %s", key);
+    
+    if (NULL == this->_reply->str)
+    {
+        freeReplyObject(this->_reply);
+        return 0;
+    }
     std::string str = this->_reply->str;
     freeReplyObject(this->_reply);
     uint64_t lenstr = str.size();
