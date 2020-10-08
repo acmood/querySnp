@@ -108,7 +108,7 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
 
 
 Bitarray* getBitarrayByColume(uint64_t col){
-    redis::RedisMgr* r = redis::instance("127.0.0.1", 6379);
+    redis::RedisMgr* r = redis::instance("127.0.0.1", 6379, 3);
     char *key;
     strcat2(&key, "bacteria", "_", int2str(col), "_", int2str(k2), "kmer");
     uint8_t *res;
@@ -237,12 +237,12 @@ void testBitArray2(){
 }
 
 void testRedis(){
-    redis::RedisMgr* r = redis::instance("127.0.0.1", 6379);
+    redis::RedisMgr* r = redis::instance("127.0.0.1", 6379, 0);
     char name[5] = "name";
     char andy[15] = "hello,Andy";
     uint8_t *andy8 = new uint8_t[sizeof(andy)];
     memcpy(andy8, andy, sizeof(andy));
-    r->set(name, andy8);
+    //r->set(name, andy8);
     uint8_t* res;
     int len = r->get(name, res);
     printf("size of res is %d", len);
@@ -268,13 +268,13 @@ int main(int argc, char** argv){
 //    testMurmurHash3();
 //    testBitArray1();
 //    testBitArray2();
-//    testRedis();
+    testRedis();
 //    testReadFile();
 //
 //    char *k=nullptr;
 //    strcat2(&k, int2str(1223), int2str(3421), nullptr);
 //    printf("%s", k);
-    doCheck("../data/reads40_45");
+//    doCheck("../data/reads40_45");
 //    doCheck("/Users/acmood/Documents/querySnp/data/reads40_45");
     return 0;
 }

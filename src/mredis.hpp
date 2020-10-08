@@ -18,6 +18,7 @@ struct RedisMgr{
     bool connect(const char* host, int port);
     bool disconnect();
     void set(const char *key, const uint8_t* value);
+    bool select(int index);
     
     uint64_t get (const char *key, uint8_t* &ret);
 
@@ -27,7 +28,7 @@ private:
 
     
 };
-RedisMgr* instance(const char* host=nullptr, int port=6379);
+RedisMgr* instance(const char* host=nullptr, int port=6379, int dbIndex=-1);
 
 
 }

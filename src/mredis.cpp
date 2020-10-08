@@ -34,6 +34,12 @@ uint64_t RedisMgr::get(const char *key, uint8_t* &ret)
 }
 
 
+bool RedisMgr::select(int index){
+    this->_reply = (redisReply*)redisCommand(this->_connect, "SELECT %d", index);
+    return true;
+}
+
+
 void RedisMgr::set(const char *key, const uint8_t* value)
 {
     redisCommand(this->_connect, "SET %s %s", key, value);
@@ -68,13 +74,16 @@ bool RedisMgr::connect(const char* host, int port)
 
 
 RedisMgr *redisMgr;
-RedisMgr* instance(const char* ip, int port){
+RedisMgr* instance(const char* ip, int port, int dbIndex){
     if(redisMgr == nullptr){
         redisMgr = new RedisMgr();
         if(!redisMgr->connect(ip, port))
         {
             printf("connect error!\n");
             return 0;
+        }
+        if (dbIndex != -1){
+            redisMgr->select(dbIndex);
         }
     }
     return redisMgr;
