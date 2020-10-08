@@ -8,7 +8,7 @@
 #include "mredis.hpp"
 #include "hiredis.h"
 #include <string>
-
+#include <string.h>
 namespace redis{
 RedisMgr::RedisMgr(){}
 
