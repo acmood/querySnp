@@ -8,6 +8,7 @@
 #include "utils.hpp"
 #include <string.h>
 #include <stdarg.h>
+#include <malloc.h>
 
 char* readData(const char* filepath){
     char* data;
