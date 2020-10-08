@@ -52,8 +52,9 @@ uint32_t RedisMgr::getPipeLineWithPrefAndCols(const char* pref, const std::vecto
             cmd = new char[lenpref+lenCol+1];
             strcpy(cmd, "get ");
             strcpy(cmd+4, pref);
-            strcpy(cmd+lenpref, strCol);
         }
+        strcpy(cmd+lenpref, strCol);
+        cmd[lenpref+lenCol] = '\0';
         redisAppendCommand(this->_connect, cmd);
     }
     for (uint64_t i = 0; i < cols.size(); i++) {
@@ -67,7 +68,9 @@ uint32_t RedisMgr::getPipeLineWithPrefAndCols(const char* pref, const std::vecto
                 string2uint8(reply->str, reply->len, ret);
                 outLen = std::max(outLen, (uint32_t)reply->len);
                 out.push_back(ret);
-            }
+            }else{
+                            printf("failed %llu\n", i);
+                       }
         } else {
             printf("pipeline_process error i :%llu cmd : %llu", i, cols[i]);
         }

@@ -56,22 +56,18 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
     std::vector<Bitarray*> kmerHash;
     int kmerId = 0;
     std::vector<uint8_t*> getBytes;
-    uint64_t lenCol = 0;
     std::vector<uint64_t> cols;
     for(auto kmer:dataLine){//68
         auto kid = getModOfHash(kmer, seeds, SIZE1);//10*16
-        bool flag = false;
-        int colCnt = 0;
         for (auto col:kid){//10*20
             if (totalError>100) return;
             char *pref=nullptr;
             cols.push_back(col);
         }
     }
-            //strcat2(&pref, "bacteria", "_", int2str(col), "_",  int2str(k1), "kmer", nullptr);
     std::sort(cols.begin(), cols.end());
     clock_t startDB = clock();
-    uint64_t t = redis::instance()->getPipeLineWithPrefAndCols("Ref_Genome_Rev_Bf", cols, getBytes);
+    uint32_t lenCol = redis::instance()->getPipeLineWithPrefAndCols("Ref_Genome_Rev_Bf", cols, getBytes);
     totalDB += clock() - startDB;
     std::vector<Bitarray*> bitarrayList;
     for(auto x:getBytes)
