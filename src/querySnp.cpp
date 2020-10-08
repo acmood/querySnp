@@ -63,7 +63,8 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
                 flag = true;
             }
             colCnt += 1;
-            auto byte = redis::instance()->get(pref);
+            uint8_t *byte;
+            redis::instance()->get(pref, byte);
             getBytes.push_back(byte);
         }
         kmerId += 1;
@@ -104,8 +105,8 @@ Bitarray* getBitarrayByColume(uint64_t col){
     redis::RedisMgr* r = redis::instance("127.0.0.1", 6379);
     char *key;
     strcat2(&key, 'bacteria', '_', int2str(col), '_', int2str(k2), 'kmer');
-
-    auto res = r->get(key);
+    uint8_t *res;
+    r->get(key, res);
     int len = sizeof(res);
     return new Bitarray(res, len);
 }
@@ -232,13 +233,16 @@ void testBitArray2(){
 void testRedis(){
     redis::RedisMgr* r = redis::instance("127.0.0.1", 6379);
     char name[5] = "name";
-    char andy[5] = "Andy";
+    char andy[15] = "hello,Andy";
     uint8_t *andy8 = new uint8_t[sizeof(andy)];
     memcpy(andy8, andy, sizeof(andy));
     r->set(name, andy8);
-    auto res = r->get(name);
-    memcpy(andy, res, sizeof(res));
-    printf("%s\n", andy);
+    uint8_t* res;
+    int len = r->get(name, res);
+    printf("size of res is %d", len);
+    char andy2[15];
+    memcpy(andy2, res, len);
+    printf("%s\n", andy2);
     delete r;
 }
 
@@ -251,6 +255,8 @@ void testReadFile(){
         print(ret[i]);
     }
 }
+
+
 
 int main(int argc, char** argv){
     testMurmurHash3();

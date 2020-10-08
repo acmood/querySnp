@@ -19,7 +19,7 @@ struct RedisMgr{
     bool disconnect();
     void set(const char *key, const uint8_t* value);
     
-    uint8_t* get (const char *key);
+    uint64_t get (const char *key, uint8_t* &ret);
 
 private:
     redisContext* _connect;

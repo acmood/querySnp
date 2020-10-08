@@ -13,15 +13,18 @@ namespace redis{
 RedisMgr::RedisMgr(){}
 
 
-uint8_t* RedisMgr::get(const char *key)
+uint64_t RedisMgr::get(const char *key, uint8_t* &ret)
 {
     this->_reply = (redisReply*)redisCommand(this->_connect, "GET %s", key);
     std::string str = this->_reply->str;
     freeReplyObject(this->_reply);
-    const char *cstr = str.c_str();
-    uint8_t *ret = new uint8_t[sizeof(cstr)];
-    memcpy(ret, cstr, sizeof(cstr));
-    return ret;
+    uint64_t lenstr = str.size();
+    char *cstr = new char[lenstr+1];
+    strcpy(cstr, str.c_str());
+    cstr[lenstr] = '\0';
+    ret = new uint8_t[lenstr];
+    memcpy(ret, cstr, lenstr);
+    return lenstr;
 }
 
 

@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD 14)
  
 link_directories(lib)
 INCLUDE_DIRECTORIES(
-        hiredis 
-        adapters)
+        lib/hiredis 
+        lib/adapters)
 
 add_executable(${PROJECT_NAME} src/querySnp.cpp ${HEADER_FILES} ${SOURCE_FILES})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} libhiredis.a)
