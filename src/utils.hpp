@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "MurmurHash3.h"
 #include <vector>
+#include <string>
 #include <algorithm>
 
 #define mmh3 std::vector<uint64_t>

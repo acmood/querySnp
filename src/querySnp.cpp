@@ -48,6 +48,7 @@ Bitarray* get_kmer_bitarray_col(uint64_t col, std::vector<Bitarray*> kmerHash){
     return ret;
 }
 int totalError  = 0;
+double totalDB = 0;
 void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std::vector<Bitarray*> &readBit){
     //time O(68*500)
     uint32_t *count = new uint32_t[M];
@@ -69,7 +70,9 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
     }
             //strcat2(&pref, "bacteria", "_", int2str(col), "_",  int2str(k1), "kmer", nullptr);
     std::sort(cols.begin(), cols.end());
+    clock_t startDB = clock();
     uint64_t t = redis::instance()->getPipeLineWithPrefAndCols("Ref_Genome_Rev_Bf", cols, getBytes);
+    totalDB += clock() - startDB;
     std::vector<Bitarray*> bitarrayList;
     for(auto x:getBytes)
         bitarrayList.push_back(new Bitarray(x, lenCol));
@@ -99,10 +102,6 @@ void checkRead(const std::vector<char*> &dataLine, std::vector<int> &ansIdx, std
     //     read_bit：返回第一层bf的检索结果
     for (auto col:ansIdx)
         readBit.push_back(get_kmer_bitarray_col(col,kmerHash));
-    if (count){
-        delete [] count;
-        count = nullptr;
-    }
     kmerHash.clear();
     getBytes.clear();
     //         ans:存在率最高的bf id, read_bit：由第一层bf检测后的01序列
@@ -192,7 +191,7 @@ void doCheck(const char *filepath){
     startTime = clock();//计时开始
     printf("start checkRead\n");
     for(auto &dataLine: dataList){
-	    if (i%1000 == 0) { printf("%d - time is %.4f\n", i, (clock()-startTime)/CLOCKS_PER_SEC);}
+	    if (i%1000 == 0) { printf("%d - time is %.4f, %.4f\n", i, (clock()-startTime)/(double)CLOCKS_PER_SEC, totalDB);}
 i ++; 
         std::vector<int> t_ans;
         std::vector<Bitarray*> t_readBit;
@@ -205,7 +204,7 @@ i ++;
     startTime = clock();
     printf("start checkSnp\n");
     for(int i = 0; i < first_bf_readBit.size(); i ++){
-	if (i%1000 == 0) { printf("%d - time is %.4f\n", i, (clock()-startTime)/CLOCKS_PER_SEC);}
+	if (i%1000 == 0) { printf("%d - time is %.4f\n", i, (clock()-startTime)/(double)CLOCKS_PER_SEC);}
         reads_snp.push_back(checkSnp(first_bf_ansIdx[i], first_bf_readBit[i], lineList, i));
     }
     print(reads_snp);
@@ -266,7 +265,6 @@ void testRedis(){
     char andy2[15];
     memcpy(andy2, res, len);
     printf("%s\n", andy2);
-    delete r;
 }
 
 
